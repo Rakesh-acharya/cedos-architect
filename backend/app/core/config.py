@@ -23,10 +23,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
     
     # CORS - Can be JSON array or comma-separated string
-    BACKEND_CORS_ORIGINS: List[str] = [
-        "http://localhost:3000",
-        "http://localhost:8000",
-    ]
+    # Default to allowing all origins for production (mobile/web access)
+    BACKEND_CORS_ORIGINS: List[str] = ["*"]
     
     @field_validator('BACKEND_CORS_ORIGINS', mode='before')
     @classmethod
