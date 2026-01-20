@@ -36,7 +36,7 @@ class IoTReading(Base):
     value = Column(Float, nullable=False)
     unit = Column(String, nullable=False)
     timestamp = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    metadata = Column(JSON)  # Additional sensor data
+    sensor_metadata = Column(JSON)  # Additional sensor data (renamed from 'metadata' - reserved in SQLAlchemy)
     
     # Relationships
     device = relationship("IoTDevice", back_populates="readings")
