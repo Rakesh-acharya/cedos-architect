@@ -1,5 +1,5 @@
 from logging.config import fileConfig
-from sqlalchemy import engine_from_config
+from sqlalchemy import engine_from_config, create_engine
 from sqlalchemy import pool
 from alembic import context
 import os
@@ -16,7 +16,15 @@ from app.models import *  # Import all models
 config = context.config
 
 # Override sqlalchemy.url with settings
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+# Use direct URL to avoid configparser interpolation issues with % characters
+# Escape % by doubling them for configparser, or use direct engine creation
+try:
+    # Try to set it normally first
+    config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+except ValueError:
+    # If it fails due to interpolation, disable interpolation
+    config.parser = config.parser.__class__(interpolation=None)
+    config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 
 # Interpret the config file for Python logging.
 if config.config_file_name is not None:
@@ -27,7 +35,8 @@ target_metadata = Base.metadata
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode."""
-    url = config.get_main_option("sqlalchemy.url")
+    # Use direct URL from settings to avoid configparser interpolation issues
+    url = settings.DATABASE_URL
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -40,9 +49,10 @@ def run_migrations_offline() -> None:
 
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
-    connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
-        prefix="sqlalchemy.",
+    # Create engine directly from DATABASE_URL to avoid configparser interpolation issues
+    # This handles URL-encoded passwords with % characters properly
+    connectable = create_engine(
+        settings.DATABASE_URL,
         poolclass=pool.NullPool,
     )
 
