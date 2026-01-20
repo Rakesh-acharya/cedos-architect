@@ -17,17 +17,22 @@ app = FastAPI(
 )
 
 # CORS Middleware
-# Allow all origins in production, restrict in development
+# Allow all origins in production for mobile/web access
 cors_origins = settings.BACKEND_CORS_ORIGINS
-if "*" in cors_origins or len(cors_origins) == 0:
-    cors_origins = ["*"]
+
+# If empty or contains "*", allow all origins
+if not cors_origins or (len(cors_origins) == 1 and cors_origins[0] == "*"):
+    allow_origins = ["*"]
+else:
+    allow_origins = cors_origins
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=cors_origins if "*" not in cors_origins else ["*"],
+    allow_origins=allow_origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # Include API routes
