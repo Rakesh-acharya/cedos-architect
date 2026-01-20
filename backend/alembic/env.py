@@ -15,16 +15,9 @@ from app.models import *  # Import all models
 # this is the Alembic Config object
 config = context.config
 
-# Override sqlalchemy.url with settings
-# Use direct URL to avoid configparser interpolation issues with % characters
-# Escape % by doubling them for configparser, or use direct engine creation
-try:
-    # Try to set it normally first
-    config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
-except ValueError:
-    # If it fails due to interpolation, disable interpolation
-    config.parser = config.parser.__class__(interpolation=None)
-    config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+# Don't set sqlalchemy.url in config - we'll use settings.DATABASE_URL directly
+# This avoids configparser interpolation issues with URL-encoded passwords (% characters)
+# We'll create the engine directly from settings.DATABASE_URL in run_migrations_online()
 
 # Interpret the config file for Python logging.
 if config.config_file_name is not None:
