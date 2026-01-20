@@ -18,6 +18,7 @@ config = context.config
 # Don't set sqlalchemy.url in config - we'll use settings.DATABASE_URL directly
 # This avoids configparser interpolation issues with URL-encoded passwords (% characters)
 # We'll create the engine directly from settings.DATABASE_URL in run_migrations_online()
+# FIXED: Removed config.set_main_option() to bypass configparser completely
 
 # Interpret the config file for Python logging.
 if config.config_file_name is not None:
