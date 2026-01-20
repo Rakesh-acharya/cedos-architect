@@ -21,7 +21,7 @@ import {
   TrendingUp
 } from '@mui/icons-material';
 import InfoCard from '../components/InfoCard';
-import axios from 'axios';
+import apiClient from '../api/client';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -37,11 +37,8 @@ const Dashboard: React.FC = () => {
 
   const loadStats = async () => {
     try {
-      const token = localStorage.getItem('token');
       const [projectsRes] = await Promise.all([
-        axios.get('/api/v1/projects/', {
-          headers: { Authorization: `Bearer ${token}` }
-        })
+        apiClient.get('/api/v1/projects/')
       ]);
       setStats({
         projects: projectsRes.data.length || 0,

@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import { Calculate, ArrowForward } from '@mui/icons-material';
 import HelpTooltip from '../components/HelpTooltip';
-import axios from 'axios';
+import apiClient from '../api/client';
 
 const Calculator: React.FC = () => {
   const navigate = useNavigate();
@@ -87,12 +87,10 @@ const Calculator: React.FC = () => {
     setError('');
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post('/api/v1/calculations/', {
+      const response = await apiClient.post('/api/v1/calculations/', {
         project_id: parseInt(projectId),
         calculation_type: calcType,
         input_parameters: inputs
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
       });
       setResult(response.data);
     } catch (err: any) {

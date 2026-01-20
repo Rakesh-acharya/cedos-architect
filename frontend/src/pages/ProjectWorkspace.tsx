@@ -33,7 +33,7 @@ import {
   Image as ImageIcon,
   Description
 } from '@mui/icons-material';
-import axios from 'axios';
+import apiClient from '../api/client';
 
 const ProjectWorkspace: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -56,9 +56,8 @@ const ProjectWorkspace: React.FC = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(
-        `/api/v1/files/workspace/${projectId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
+      const response = await apiClient.get(
+        `/api/v1/files/workspace/${projectId}`
       );
       setWorkspace(response.data);
     } catch (error) {
@@ -78,12 +77,11 @@ const ProjectWorkspace: React.FC = () => {
 
     try {
       const token = localStorage.getItem('token');
-      await axios.post(
+      await apiClient.post(
         `/api/v1/files/upload/${projectId}`,
         formData,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
             'Content-Type': 'multipart/form-data'
           }
         }
@@ -100,10 +98,9 @@ const ProjectWorkspace: React.FC = () => {
   const handleDownload = async (fileId: number, fileName: string) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(
+      const response = await apiClient.get(
         `/api/v1/files/download/${fileId}`,
         {
-          headers: { Authorization: `Bearer ${token}` },
           responseType: 'blob'
         }
       );

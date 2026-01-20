@@ -8,7 +8,7 @@ import {
   Typography,
   Paper,
 } from '@mui/material';
-import axios from 'axios';
+import apiClient from '../api/client';
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -22,7 +22,7 @@ const Login: React.FC = () => {
       formData.append('username', username);
       formData.append('password', password);
       
-      const response = await axios.post('/api/v1/auth/login', formData);
+      const response = await apiClient.post('/api/v1/auth/login', formData);
       localStorage.setItem('token', response.data.access_token);
       navigate('/');
     } catch (error) {

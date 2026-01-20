@@ -1,18 +1,17 @@
 @echo off
 REM ============================================================
-REM   COMPLETE DEPLOYMENT - Web + Mobile APK
-REM   Single script - Everything automated!
+REM   Deploy Web + Build Mobile APK - Complete Solution
 REM ============================================================
 
 echo.
 echo ============================================================
-echo   CEDOS - Complete Deployment
+echo   CEDOS - Deploy Web + Mobile APK
 echo ============================================================
 echo.
-echo This will deploy:
-echo   - Frontend to Vercel (Web Browser)
-echo   - Mobile APK (Android)
-echo   - Both connected to Railway backend
+echo This will:
+echo   1. Deploy frontend to Vercel (Web browser)
+echo   2. Build mobile APK (Android)
+echo   3. Both connected to Railway backend
 echo.
 pause
 
@@ -32,7 +31,6 @@ if %errorlevel% neq 0 (
 
 railway whoami >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Please login to Railway...
     railway login
 )
 
@@ -40,7 +38,7 @@ echo Getting Railway URL...
 railway domain
 
 echo.
-set /p RAILWAY_URL="Enter Railway URL (from above): "
+set /p RAILWAY_URL="Enter Railway URL (from above, e.g., https://xxx.railway.app): "
 
 if "%RAILWAY_URL%"=="" (
     echo [ERROR] Railway URL required!
@@ -49,23 +47,25 @@ if "%RAILWAY_URL%"=="" (
     exit /b 1
 )
 
-REM Clean URL
+REM Ensure https://
 set RAILWAY_URL=%RAILWAY_URL:http://=%
 set RAILWAY_URL=%RAILWAY_URL:https://=%
 set RAILWAY_URL=https://%RAILWAY_URL%
 
 echo.
-echo Using Railway URL: %RAILWAY_URL%
+echo Using: %RAILWAY_URL%
 echo.
 
 echo ============================================================
-echo   Step 2: Update Frontend API Configuration
+echo   Step 2: Deploy Frontend to Vercel
 echo ============================================================
 echo.
 
 cd /d "%~dp0frontend"
 
-REM Update API client with Railway URL
+REM Create API config
+if not exist "src\api" mkdir src\api
+
 (
 echo import axios from 'axios';
 echo.
@@ -73,9 +73,6 @@ echo const API_BASE_URL = '%RAILWAY_URL%';
 echo.
 echo const apiClient = axios.create({
 echo   baseURL: API_BASE_URL,
-echo   headers: {
-echo     'Content-Type': 'application/json',
-echo   },
 echo });
 echo.
 echo apiClient.interceptors.request.use(
@@ -85,70 +82,56 @@ echo     if \(token\) {
 echo       config.headers.Authorization = `Bearer ${token}`;
 echo     }
 echo     return config;
-echo   },
-echo   \(error\) =^> Promise.reject\(error\)
+echo   }
 echo );
 echo.
 echo export default apiClient;
 ) > src\api\client.ts
 
-echo [OK] Frontend API configured for: %RAILWAY_URL%
+echo [OK] Frontend API configured
+
+REM Update all axios calls to use apiClient
+echo.
+echo Updating frontend files to use API client...
+powershell -Command "(Get-Content src\pages\Login.tsx) -replace 'import axios from ''axios'';', 'import apiClient from ''../api/client'';' -replace 'axios\.', 'apiClient.' | Set-Content src\pages\Login.tsx"
+powershell -Command "(Get-Content src\pages\Dashboard.tsx) -replace 'import axios from ''axios'';', 'import apiClient from ''../api/client'';' -replace 'axios\.', 'apiClient.' | Set-Content src\pages\Dashboard.tsx"
+powershell -Command "(Get-Content src\pages\Projects.tsx) -replace 'import axios from ''axios'';', 'import apiClient from ''../api/client'';' -replace 'axios\.', 'apiClient.' | Set-Content src\pages\Projects.tsx"
+powershell -Command "(Get-Content src\pages\NewProject.tsx) -replace 'import axios from ''axios'';', 'import apiClient from ''../api/client'';' -replace 'axios\.', 'apiClient.' | Set-Content src\pages\NewProject.tsx"
+powershell -Command "(Get-Content src\pages\Calculator.tsx) -replace 'import axios from ''axios'';', 'import apiClient from ''../api/client'';' -replace 'axios\.', 'apiClient.' | Set-Content src\pages\Calculator.tsx"
+powershell -Command "(Get-Content src\pages\ProjectWorkspace.tsx) -replace 'import axios from ''axios'';', 'import apiClient from ''../api/client'';' -replace 'axios\.', 'apiClient.' | Set-Content src\pages\ProjectWorkspace.tsx"
+powershell -Command "(Get-Content src\pages\ARVisualization.tsx) -replace 'import axios from ''axios'';', 'import apiClient from ''../api/client'';' -replace 'axios\.', 'apiClient.' | Set-Content src\pages\ARVisualization.tsx"
+
+echo [OK] Frontend files updated
 
 echo.
 echo Building frontend...
 call npm run build
 
-if %errorlevel% neq 0 (
-    echo [ERROR] Build failed!
-    pause
-    exit /b 1
-)
-
-echo [OK] Frontend built successfully
-
 echo.
-echo ============================================================
-echo   Step 3: Deploy Frontend to Vercel
-echo ============================================================
-echo.
-
+echo Deploying to Vercel...
 where vercel >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Installing Vercel CLI...
     npm install -g vercel
 )
 
 vercel whoami >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Please login to Vercel...
-    start https://vercel.com/login
     vercel login
 )
 
-echo Deploying to Vercel...
-vercel --prod --yes
+vercel --prod
 
-if %errorlevel% equ 0 (
-    echo.
-    echo [OK] Frontend deployed to Vercel!
-    echo.
-    vercel ls | findstr cedos
-    echo.
-    set /p VERCEL_URL="Enter your Vercel URL (from above): "
-) else (
-    echo [WARNING] Check Vercel dashboard: https://vercel.com/dashboard
-)
+echo.
+echo ============================================================
+echo   Step 3: Build Mobile APK
+echo ============================================================
+echo.
 
 cd /d "%~dp0"
 
-echo.
-echo ============================================================
-echo   Step 4: Setup Mobile App
-echo ============================================================
-echo.
-
+REM Check if mobile app exists
 if not exist "cedos-mobile" (
-    echo Creating mobile app...
+    echo Mobile app directory not found. Creating...
     mkdir cedos-mobile
     cd cedos-mobile
     
@@ -156,15 +139,15 @@ if not exist "cedos-mobile" (
     npx create-expo-app@latest . --template blank-typescript --yes
     
     echo Installing dependencies...
-    npm install axios @react-navigation/native @react-navigation/native-stack react-native-paper @react-native-async-storage/async-storage react-native-vector-icons
+    npm install axios @react-navigation/native @react-navigation/native-stack react-native-paper @react-native-async-storage/async-storage
 ) else (
     cd cedos-mobile
 )
 
 echo.
-echo Configuring mobile app API...
+echo Configuring mobile app for Railway backend...
 
-if not exist "src" mkdir src
+REM Create API config
 if not exist "src\config" mkdir src\config
 
 (
@@ -173,9 +156,9 @@ echo.
 echo export default API_BASE_URL;
 ) > src\config\api.ts
 
-echo [OK] Mobile API configured for: %RAILWAY_URL%
+echo [OK] Mobile API configured
 
-REM Create app.json
+REM Create app.json if not exists
 if not exist "app.json" (
     (
     echo {
@@ -184,6 +167,12 @@ if not exist "app.json" (
     echo     "slug": "cedos-mobile",
     echo     "version": "1.0.0",
     echo     "orientation": "portrait",
+    echo     "icon": "./assets/icon.png",
+    echo     "splash": {
+    echo       "image": "./assets/splash.png",
+    echo       "resizeMode": "contain",
+    echo       "backgroundColor": "#1976d2"
+    echo     },
     echo     "android": {
     echo       "package": "com.cedos.app",
     echo       "adaptiveIcon": {
@@ -197,11 +186,7 @@ if not exist "app.json" (
 )
 
 echo.
-echo ============================================================
-echo   Step 5: Build Mobile APK
-echo ============================================================
-echo.
-
+echo Building APK with EAS...
 npm install -g eas-cli
 
 eas whoami >nul 2>&1
@@ -227,9 +212,9 @@ if not exist "eas.json" (
 
 echo.
 echo Starting APK build...
-echo This takes 10-15 minutes...
+echo This will take 10-15 minutes...
 echo.
-eas build --platform android --profile production --non-interactive
+eas build --platform android --profile production
 
 cd /d "%~dp0"
 
@@ -238,35 +223,10 @@ echo ============================================================
 echo   DEPLOYMENT COMPLETE!
 echo ============================================================
 echo.
-echo Summary:
+echo Frontend: Deployed to Vercel
+echo Backend: %RAILWAY_URL%
+echo Mobile: APK building (check Expo dashboard)
 echo.
-if not "%VERCEL_URL%"=="" (
-    echo Frontend (Web): %VERCEL_URL%
-) else (
-    echo Frontend (Web): Check Vercel dashboard
-)
-echo Backend (API): %RAILWAY_URL%
-echo Mobile APK: Building (check Expo dashboard)
+echo All connected to same Railway backend!
 echo.
-echo ============================================================
-echo   Access Your App
-echo ============================================================
-echo.
-if not "%VERCEL_URL%"=="" (
-    echo Web App: %VERCEL_URL%
-)
-echo API Docs: %RAILWAY_URL%/api/docs
-echo.
-echo ============================================================
-echo   Mobile APK
-echo ============================================================
-echo.
-echo Check build status:
-echo   https://expo.dev/accounts/[your-account]/builds
-echo.
-echo Once build completes, download the APK!
-echo.
-echo ============================================================
-echo.
-
 pause

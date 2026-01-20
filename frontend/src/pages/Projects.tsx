@@ -25,7 +25,7 @@ import {
   Calculate,
   TrendingUp
 } from '@mui/icons-material';
-import axios from 'axios';
+import apiClient from '../api/client';
 
 interface Project {
   id: number;
@@ -49,9 +49,7 @@ const Projects: React.FC = () => {
   const loadProjects = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('/api/v1/projects/', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await apiClient.get('/api/v1/projects/');
       setProjects(response.data);
     } catch (error) {
       console.error('Error loading projects:', error);
@@ -64,9 +62,7 @@ const Projects: React.FC = () => {
     if (!deleteDialog) return;
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`/api/v1/projects/${deleteDialog}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await apiClient.delete(`/api/v1/projects/${deleteDialog}`);
       loadProjects();
       setDeleteDialog(null);
     } catch (error) {

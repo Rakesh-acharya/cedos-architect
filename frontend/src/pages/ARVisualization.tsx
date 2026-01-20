@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Box, Typography, CircularProgress, Paper, TextField, Button } from '@mui/material';
 import ARViewer from '../components/ARViewer';
-import axios from 'axios';
+import apiClient from '../api/client';
 
 const ARVisualization: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -16,15 +16,12 @@ const ARVisualization: React.FC = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post(
+      const response = await apiClient.post(
         `/api/v1/ar/generate/${projectId}`,
         {
           site_length: siteLength,
           site_width: siteWidth,
           site_height: siteHeight
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` }
         }
       );
       setArData(response.data);

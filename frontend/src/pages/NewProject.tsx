@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import Wizard from '../components/Wizard';
 import HelpTooltip from '../components/HelpTooltip';
-import axios from 'axios';
+import apiClient from '../api/client';
 
 const NewProject: React.FC = () => {
   const navigate = useNavigate();
@@ -78,15 +78,13 @@ const NewProject: React.FC = () => {
     setError('');
     try {
       const token = localStorage.getItem('token');
-      await axios.post('/api/v1/projects/', {
+      await apiClient.post('/api/v1/projects/', {
         project_name: formData.projectName,
         project_type: formData.projectType,
         location: formData.location,
         description: formData.description,
         seismic_zone: formData.seismicZone,
         soil_bearing_capacity: parseFloat(formData.soilBearingCapacity)
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
       });
       navigate('/projects');
     } catch (err: any) {
