@@ -14,7 +14,8 @@ echo   - Frontend (Web Browser) to Vercel
 echo   - Mobile APK (Android) via Expo
 echo   - Both connected to Railway backend
 echo.
-pause
+echo Press any key to continue...
+pause >nul
 
 REM Step 1: Get Railway URL
 echo.

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// API base URL - Set via environment variable or use Railway URL
-const API_BASE_URL = import.meta.env.VITE_API_URL || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:8000' : 'https://your-railway-url.railway.app');
+// API base URL - Railway backend
+const API_BASE_URL = 'https://cedos-architect-production.up.railway.app';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,

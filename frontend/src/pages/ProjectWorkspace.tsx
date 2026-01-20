@@ -24,8 +24,6 @@ import {
 import {
   Upload,
   Download,
-  Folder,
-  InsertDriveFile,
   Delete,
   Share,
   Search,
@@ -76,7 +74,6 @@ const ProjectWorkspace: React.FC = () => {
     formData.append('description', description);
 
     try {
-      const token = localStorage.getItem('token');
       await apiClient.post(
         `/api/v1/files/upload/${projectId}`,
         formData,
@@ -97,7 +94,6 @@ const ProjectWorkspace: React.FC = () => {
 
   const handleDownload = async (fileId: number, fileName: string) => {
     try {
-      const token = localStorage.getItem('token');
       const response = await apiClient.get(
         `/api/v1/files/download/${fileId}`,
         {
@@ -211,7 +207,7 @@ const ProjectWorkspace: React.FC = () => {
 
       {/* Files by Category */}
       <Tabs value={tabValue} onChange={(e, v) => setTabValue(v)} sx={{ mb: 2 }}>
-        {categories.map((cat, idx) => (
+        {categories.map((cat) => (
           <Tab key={cat} label={cat.replace('_', ' ')} />
         ))}
       </Tabs>
@@ -221,8 +217,9 @@ const ProjectWorkspace: React.FC = () => {
           <List>
             {Object.entries(workspace.files_by_category)
               .filter(([cat]) => categories[tabValue] === cat || tabValue === 0)
-              .flatMap(([cat, files]: [string, any[]]) =>
-                files
+              .flatMap(([cat, files]) => {
+                const fileArray = Array.isArray(files) ? files : [];
+                return fileArray
                   .filter((f: any) =>
                     searchTerm === '' ||
                     f.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -264,8 +261,8 @@ const ProjectWorkspace: React.FC = () => {
                         }
                       />
                     </ListItem>
-                  ))
-              )}
+                  ));
+              })}
           </List>
         </Paper>
       )}

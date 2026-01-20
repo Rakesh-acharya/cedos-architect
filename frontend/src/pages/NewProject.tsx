@@ -269,7 +269,7 @@ const NewProject: React.FC = () => {
         onNext={handleNext}
         onBack={handleBack}
         onFinish={handleFinish}
-        canProceed={canProceed() && !loading}
+        canProceed={!!canProceed() && !loading}
       >
         {renderStep()}
       </Wizard>

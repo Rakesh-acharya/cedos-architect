@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "android": {
+      "permissions": [],
+      "adaptiveIcon": {
+        "backgroundColor": "#1976d2",
+        "foregroundImage": "./assets/adaptive-icon.png"
+      },
+      "package": "com.cedos.app"
+    },
+    "name": "CEDOS",
+    "userInterfaceStyle": "light",
+    "slug": "cedos-mobile",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "backgroundColor": "#1976d2",
+      "resizeMode": "contain",
+      "image": "./assets/splash.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "80e230f2-fc38-4360-8b10-76f4fd5f54e4"
+      }
+    },
+    "owner": "rakeshacherya"
+  }
+}

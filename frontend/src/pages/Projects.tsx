@@ -13,17 +13,14 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Alert
 } from '@mui/material';
 import {
   Add,
   Folder,
-  Edit,
   Delete,
   Visibility,
   Description,
   Calculate,
-  TrendingUp
 } from '@mui/icons-material';
 import apiClient from '../api/client';
 
@@ -48,7 +45,6 @@ const Projects: React.FC = () => {
 
   const loadProjects = async () => {
     try {
-      const token = localStorage.getItem('token');
       const response = await apiClient.get('/api/v1/projects/');
       setProjects(response.data);
     } catch (error) {
@@ -61,7 +57,6 @@ const Projects: React.FC = () => {
   const handleDelete = async () => {
     if (!deleteDialog) return;
     try {
-      const token = localStorage.getItem('token');
       await apiClient.delete(`/api/v1/projects/${deleteDialog}`);
       loadProjects();
       setDeleteDialog(null);
